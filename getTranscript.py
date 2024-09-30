@@ -4,7 +4,9 @@ from youtube_transcript_api.formatters import TextFormatter
 import os
 import textwrap
 import re
-import openai
+from openai import OpenAI
+
+
 import time
 from tenacity import retry, wait_random_exponential, stop_after_attempt
 
@@ -12,80 +14,78 @@ from tenacity import retry, wait_random_exponential, stop_after_attempt
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_ORGANIZATION = os.getenv("OPENAI_ORGANIZATION")
 
-# Check if API key and organization ID are set
+client = OpenAI(api_key=OPENAI_API_KEY)
+
+# Ensure API key and organization ID are set
 if not OPENAI_API_KEY or not OPENAI_ORGANIZATION:
     raise ValueError("Please set the OPENAI_API_KEY and OPENAI_ORGANIZATION environment variables")
 
-openai.organization = OPENAI_ORGANIZATION
-openai.api_key = OPENAI_API_KEY
+# TODO: The 'openai.organization' option isn't read in the client API. You will need to pass it when you instantiate the client, e.g. 'OpenAI(organization=OPENAI_ORGANIZATION)'
+# openai.organization = OPENAI_ORGANIZATION
 
 PROMPT_STRING = "Write a detailed summary of the following:\n\n<<SUMMARY>>\n"
 
-# Retrieve transcript for a given YouTube video ID
-video_id = "zzMLg3Ys5vI"
-transcript = YouTubeTranscriptApi.get_transcript(video_id)
+# Retrieve transcript for the given YouTube video ID
+video_id = "9uDpWfMbAdQ"
+transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
 
 # Format the transcript using TextFormatter
 formatter = TextFormatter()
-transcript = formatter.format_transcript(transcript)
+transcript = formatter.format_transcript(transcript_list)
 
 video_length = len(transcript)
 
-# If the video is ~25 minutes or more, double the chunk size to reduce overall API calls
+# Adjust chunk size based on video length
 chunk_size = 4000 if video_length >= 25000 else 2000
 
-# Wrap the transcript in chunks of characters
+# Wrap the transcript in chunks
 chunks = textwrap.wrap(transcript, chunk_size)
 
 summaries = list()
 
-# Retry logic to handle API rate limits and errors
+# Retry logic for handling rate limits and errors
 @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
 def generate_summary(chunk):
     prompt = PROMPT_STRING.replace("<<SUMMARY>>", chunk)
-    
-    # Using the new ChatCompletion with gpt-3.5-turbo
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[{"role": "user", "content": prompt}],
-        max_tokens=256,
-        temperature=0.7  # You can adjust temperature as needed
-    )
-    return response['choices'][0]['message']['content']
+
+    # Using the new API method
+    response = client.chat.completions.create(model="gpt-3.5-turbo",
+    messages=[{"role": "user", "content": prompt}],
+    max_tokens=256,
+    temperature=0.7)
+    return response.choices[0].message.content
 
 # Generate summaries for each chunk
-for chunk in chunks:
+for idx, chunk in enumerate(chunks):
     try:
-        # Generate summary using OpenAI API
         summary = generate_summary(chunk)
         summary = re.sub(r"\s+", " ", summary.strip())
         summaries.append(summary)
-        
-        # Sleep to avoid hitting rate limits (adjust as needed)
+
+        print(f"Processed chunk {idx+1}/{len(chunks)}")
+
         time.sleep(1)
     except Exception as e:
-        print(f"Error processing chunk: {e}")
+        print(f"Error processing chunk {idx+1}: {e}")
         continue
 
-# Join all the chunk summaries into one string
+# Combine chunk summaries
 chunk_summaries = " ".join(summaries)
 prompt = PROMPT_STRING.replace("<<SUMMARY>>", chunk_summaries)
 
-# Generate a final summary from the chunk summaries
+# Generate a final summary from the combined summaries
 try:
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[{"role": "user", "content": prompt}],
-        max_tokens=2056,
-        temperature=0.7  # Adjust temperature as needed
-    )
-    final_summary = re.sub(r"\s+", " ", response['choices'][0]['message']['content'].strip())
+    response = client.chat.completions.create(model="gpt-3.5-turbo",
+    messages=[{"role": "user", "content": prompt}],
+    max_tokens=2048,
+    temperature=0.7)
+    final_summary = re.sub(r"\s+", " ", response.choices[0].message.content.strip())
 except Exception as e:
     final_summary = "Could not generate the final summary due to an error."
     print(f"Error generating final summary: {e}")
 
-# Print all the chunk summaries
+# Print all summaries
 for idx, summary in enumerate(summaries):
-    print(f"({idx}) - {summary}\n")
+    print(f"({idx+1}) - {summary}\n")
 
 print(f"(Final Summary) - {final_summary}")
