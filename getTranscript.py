@@ -4,7 +4,7 @@ from youtube_transcript_api.formatters import TextFormatter
 import os
 import textwrap
 import re
-from openai import OpenAI
+import openai 
 
 
 import time
@@ -14,7 +14,6 @@ from tenacity import retry, wait_random_exponential, stop_after_attempt
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_ORGANIZATION = os.getenv("OPENAI_ORGANIZATION")
 
-client = OpenAI(api_key=OPENAI_API_KEY)
 
 # Ensure API key and organization ID are set
 if not OPENAI_API_KEY or not OPENAI_ORGANIZATION:
@@ -49,7 +48,7 @@ def generate_summary(chunk):
     prompt = PROMPT_STRING.replace("<<SUMMARY>>", chunk)
 
     # Using the new API method
-    response = client.chat.completions.create(model="gpt-3.5-turbo",
+    response = openai.chat.completions.create(model="gpt-3.5-turbo",
     messages=[{"role": "user", "content": prompt}],
     max_tokens=256,
     temperature=0.7)
@@ -75,7 +74,7 @@ prompt = PROMPT_STRING.replace("<<SUMMARY>>", chunk_summaries)
 
 # Generate a final summary from the combined summaries
 try:
-    response = client.chat.completions.create(model="gpt-3.5-turbo",
+    response = openai.chat.completions.create(model="gpt-3.5-turbo",
     messages=[{"role": "user", "content": prompt}],
     max_tokens=2048,
     temperature=0.7)
