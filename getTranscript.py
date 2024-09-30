@@ -5,8 +5,8 @@ import os
 import textwrap
 import re
 import openai
-import time  # Added to handle rate limits
-from tenacity import retry, wait_random_exponential, stop_after_attempt  # Added for retry logic
+import time
+from tenacity import retry, wait_random_exponential, stop_after_attempt
 
 # Retrieve OpenAI API credentials from environment variables
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -41,20 +41,24 @@ summaries = list()
 
 # Retry logic to handle API rate limits and errors
 @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
-def generate_summary(prompt):
-    response = openai.Completion.create(
-        model="text-davinci-003", prompt=prompt, max_tokens=256
+def generate_summary(chunk):
+    prompt = PROMPT_STRING.replace("<<SUMMARY>>", chunk)
+    
+    # Using the new ChatCompletion with gpt-3.5-turbo
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=256,
+        temperature=0.7  # You can adjust temperature as needed
     )
-    return response
+    return response['choices'][0]['message']['content']
 
 # Generate summaries for each chunk
 for chunk in chunks:
-    prompt = PROMPT_STRING.replace("<<SUMMARY>>", chunk)
-
     try:
         # Generate summary using OpenAI API
-        response = generate_summary(prompt)
-        summary = re.sub("\s+", " ", response.choices[0].text.strip())
+        summary = generate_summary(chunk)
+        summary = re.sub(r"\s+", " ", summary.strip())
         summaries.append(summary)
         
         # Sleep to avoid hitting rate limits (adjust as needed)
@@ -69,8 +73,13 @@ prompt = PROMPT_STRING.replace("<<SUMMARY>>", chunk_summaries)
 
 # Generate a final summary from the chunk summaries
 try:
-    response = generate_summary(prompt)
-    final_summary = re.sub("\s+", " ", response.choices[0].text.strip())
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=2056,
+        temperature=0.7  # Adjust temperature as needed
+    )
+    final_summary = re.sub(r"\s+", " ", response['choices'][0]['message']['content'].strip())
 except Exception as e:
     final_summary = "Could not generate the final summary due to an error."
     print(f"Error generating final summary: {e}")
