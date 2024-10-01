@@ -31,7 +31,7 @@ YouTube Transcribe AI is a user-friendly application that allows you to effortle
 
 3. **Install Required Libraries**
    ```bash
-   pip install youtube-transcript-api
+   pip install requirements.txt
 
 
 ## 🏃‍♂️ Running the Application
