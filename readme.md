@@ -36,7 +36,7 @@ YouTube Transcribe AI is a user-friendly application that allows you to effortle
 
 ## 🏃‍♂️ Running the Application
 
--  **Run the application** by executing the following command in bash:
+-  **Run the application** 
    ```bash
    python youtube_transcribe_ai.py
 
@@ -51,7 +51,7 @@ YouTube Transcribe AI is a user-friendly application that allows you to effortle
   - Choose prompts from the prompt categories to engage with the transcript.
   - Copy the selected prompt and/or the transcript to your clipboard.
 - **Copy Transcript or Prompt**: Use the "Copy Transcript" and "Copy Prompt" buttons to copy content as needed.
-- **paste output into Chat GPT or other language model**: this allows you to get summarized or detailed notes from the YouTube video.
+- **Paste output into Chat GPT or other language model**: this allows you to get summarized or detailed notes from the YouTube video transcript.
 
 ## 🌟 Supported Languages
 
