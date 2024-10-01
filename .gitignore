@@ -1,2 +1,5 @@
 /venv312
 openai_apikey.txt
+/build
+/dist
+youtube_transcribe_ai.spec

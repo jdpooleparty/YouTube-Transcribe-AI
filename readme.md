@@ -1,9 +1,10 @@
 # Initial Setup
-1. Create Virtual Environment: python -m venv venv312
-2. Activate venv: venv312\Scripts\activate 
-3. Upgrade pip: python.exe -m pip install --upgrade pip
-4. Install requirements.txt: pip install -r requirements.txt
-5. Run main program: python -m youtube_transcribe_ai
+1. Clone Repo
+2. Create Virtual Environment: python -m venv venv312
+3. Activate venv: venv312\Scripts\activate 
+4. Upgrade pip: python.exe -m pip install --upgrade pip
+5. Install requirements.txt: pip install -r requirements.txt
+6. Run main program: python -m youtube_transcribe_ai
 
 
 # To set Up Main Program as an Executable:
