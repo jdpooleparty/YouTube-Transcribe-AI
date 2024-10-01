@@ -1,5 +1,4 @@
-# Adapting the application to meet the specifications mentioned above, including adding support for Japanese transcripts,
-# adding a language selection dropdown, and enhancing user experience.
+# Updating the layout to place the "Get Transcript" button next to the language selection dropdown.
 
 import re
 import textwrap
@@ -31,7 +30,31 @@ def extract_youtube_id(url):
     
     return None
 
-# Function to retrieve and display the transcript with language support
+# Dictionary mapping language names to ISO 639-1 codes for popular languages
+supported_languages = {
+    "English": "en",
+    "Japanese": "ja",
+    "Spanish": "es",
+    "French": "fr",
+    "German": "de",
+    "Chinese (Simplified)": "zh-Hans",
+    "Chinese (Traditional)": "zh-Hant",
+    "Korean": "ko",
+    "Russian": "ru",
+    "Portuguese": "pt",
+    "Italian": "it",
+    "Dutch": "nl",
+    "Arabic": "ar",
+    "Hindi": "hi",
+    "Swedish": "sv",
+    "Norwegian": "no",
+    "Danish": "da",
+    "Finnish": "fi",
+    "Greek": "el",
+    "Polish": "pl",
+}
+
+# Function to retrieve and display the transcript
 def retrieve_transcript():
     youtube_url = url_entry.get()
 
@@ -41,19 +64,19 @@ def retrieve_transcript():
         messagebox.showerror("Error", "Invalid YouTube URL")
     else:
         try:
-            # Determine the selected language
-            selected_language = 'en' if language_var.get() == "English" else 'ja'
+            # Retrieve the selected language code from the dictionary
+            selected_language_name = language_var.get()
+            selected_language_code = supported_languages.get(selected_language_name, "en")
             
-            # Try to retrieve the transcript in the selected language, with fallback to the other option
+            # Try to retrieve the transcript in the selected language, with fallback support
             transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
             
             try:
-                # Try to get the selected language transcript
-                transcript = transcript_list.find_transcript([selected_language])
+                # Attempt to get the transcript in the selected language
+                transcript = transcript_list.find_transcript([selected_language_code])
             except NoTranscriptFound:
-                # Fallback to the other language
-                fallback_language = 'ja' if selected_language == 'en' else 'en'
-                transcript = transcript_list.find_transcript([fallback_language])
+                # Fallback to English if the selected language is unavailable
+                transcript = transcript_list.find_transcript(['en'])
             
             formatted_transcript = transcript.fetch()
             
@@ -119,7 +142,7 @@ def copy_prompt():
 
 # Set up the main application window
 root = tk.Tk()
-root.title("YouTube Transcribe AI")
+root.title("YouTube Transcribe AI with Multi-Language Support")
 root.geometry("900x950")
 
 # Define colors and fonts for styling
@@ -164,17 +187,17 @@ language_label = ttk.Label(main_frame, text="Select Language:")
 language_label.grid(row=1, column=0, sticky='W', padx=5, pady=5)
 
 language_var = tk.StringVar()
-language_combobox = ttk.Combobox(main_frame, textvariable=language_var, values=["English", "Japanese"], state="readonly")
+language_combobox = ttk.Combobox(main_frame, textvariable=language_var, values=list(supported_languages.keys()), state="readonly")
 language_combobox.grid(row=1, column=1, sticky='W', padx=5, pady=5)
 language_combobox.current(0)  # Default to English
 
-# Retrieve Transcript Button
+# Retrieve Transcript Button placed next to the language selection dropdown
 retrieve_button = ttk.Button(main_frame, text="Get Transcript", command=retrieve_transcript)
-retrieve_button.grid(row=2, column=0, columnspan=2, pady=10)
+retrieve_button.grid(row=1, column=2, sticky='W', padx=5, pady=5)
 
 # ScrolledText Widget to Display the Transcript
 transcript_frame = ttk.Frame(main_frame)
-transcript_frame.grid(row=3, column=0, columnspan=2, sticky='NSEW', padx=5, pady=5)
+transcript_frame.grid(row=2, column=0, columnspan=3, sticky='NSEW', padx=5, pady=5)
 transcript_frame.columnconfigure(0, weight=1)
 transcript_frame.rowconfigure(0, weight=1)
 
@@ -184,12 +207,12 @@ transcript_textbox = scrolledtext.ScrolledText(
     borderwidth=1, relief='solid'
 )
 transcript_textbox.grid(row=0, column=0, sticky='NSEW')
-
 transcript_textbox.configure(font=('Segoe UI', 12))
+
 
 # Copy Transcript Button
 copy_button = ttk.Button(main_frame, text="Copy Transcript", command=copy_transcript)
-copy_button.grid(row=4, column=0, columnspan=2, pady=10)
+copy_button.grid(row=3, column=0, sticky = 'E', columnspan=3, pady=10)
 
 # GPT Prompts Section
 prompts_by_category = {
@@ -197,9 +220,6 @@ prompts_by_category = {
         ("Explain key concepts to a beginner", "As you review this transcript, explain the key concepts as if you were teaching them to a beginner. Provide examples, analogies, and practical applications that make the ideas easy to grasp and remember."),
         ("Transform into step-by-step guide", "Transform this transcript into a step-by-step guide that I can follow. Highlight the main points, but also include action items and exercises I can do to apply this knowledge in real life.")
     ],
-    # Additional
-# Continue populating the rest of the prompts_by_category dictionary as needed.
-
     "2. Emphasize Key Takeaways and Memory Aids": [
         ("Create mnemonic or visual metaphor", "From this transcript, identify the most critical points and create a mnemonic, acronym, or visual metaphor to help me retain the information."),
         ("Prepare me for a quiz", "Explain the concepts from this transcript as if you were preparing me for a quiz. Ask me questions along the way and then provide detailed answers.")
@@ -238,9 +258,8 @@ prompts_by_category = {
     ]
 }
 
-# Create a frame to display prompts
 prompt_frame = ttk.LabelFrame(main_frame, text="GPT Prompts", style='TLabelframe')
-prompt_frame.grid(row=5, column=0, columnspan=2, sticky='NSEW', padx=5, pady=10)
+prompt_frame.grid(row=4, column=0, columnspan=3, sticky='NSEW', padx=5, pady=10)
 prompt_frame.columnconfigure(0, weight=1)
 prompt_frame.rowconfigure(1, weight=1)
 
@@ -256,7 +275,7 @@ treeview_scrollbar = ttk.Scrollbar(prompt_frame, orient=tk.VERTICAL, command=pro
 prompt_treeview.configure(yscrollcommand=treeview_scrollbar.set)
 treeview_scrollbar.grid(row=1, column=1, sticky='NS')
 
-# Populate the Treeview
+# Populate the Treeview with categories and prompts
 for category, prompts in prompts_by_category.items():
     category_id = prompt_treeview.insert('', 'end', text=category, open=False)
     for title, prompt in prompts:
