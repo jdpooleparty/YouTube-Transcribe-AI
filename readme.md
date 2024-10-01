@@ -1,4 +1,4 @@
-#Initial Setup
+# Initial Setup
 1. create venv: 
     a. python -m venv venv312
 2. activate venv:
@@ -12,7 +12,7 @@
     b. setx OPENAI_ORGANIZATION "your-organization-id-here"
 
 
-#To set up an executable:
+# To set up an executable:
 1. pip install pyinstaller
 2. pyinstaller --onefile --windowed youtube_transcript_getter.py
 3. grab exe from source directory
