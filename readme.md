@@ -3,7 +3,7 @@
     a. python -m venv venv312
 2. activate venv:
     a. venv312\Scripts\activate 
-3. Upgrate pip
+3. Upgrade pip
     a. python.exe -m pip install --upgrade pip
 4. run requirements.txt
     a. pip install -r requirements.txt
