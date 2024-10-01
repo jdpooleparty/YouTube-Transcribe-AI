@@ -13,4 +13,4 @@
 
 
 # Bonus
-_summarize_transcript_gpt.py can be retrofitted to automate GPT summaries using Open API. Let me know if there is interest in a similar program that automates GPT integration_
+_summarize_transcript_gpt.py_ can be retrofitted to automate GPT summaries using Open API. Let me know if there is interest in a similar program that automates GPT integration.
