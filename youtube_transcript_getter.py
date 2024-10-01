@@ -59,23 +59,50 @@ def retrieve_transcript():
         except Exception as e:
             messagebox.showerror("Error", f"An error occurred: {e}")
 
+# Function to copy transcript to clipboard
+def copy_transcript():
+    transcript_textbox.config(state=tk.NORMAL)  # Enable editing temporarily to copy text
+    transcript = transcript_textbox.get("1.0", tk.END).strip()  # Retrieve all text from the textbox
+    if transcript:
+        root.clipboard_clear()  # Clear clipboard
+        root.clipboard_append(transcript)  # Append transcript to clipboard
+        root.update()  # Now it stays on the clipboard even after the window is closed
+    else:
+        messagebox.showwarning("Warning", "No transcript available to copy.")
+    transcript_textbox.config(state=tk.DISABLED)  # Disable editing again
+
 # Set up the main application window
 root = tk.Tk()
 root.title("YouTube Transcript Getter")
-root.geometry("700x500")
+root.geometry("750x550")
+root.configure(bg="#e0f7fa")  # Light blue background
+
+# Example: Applying Variation 1
+LABEL_STYLE = {'bg': '#d0e7ff', 'fg': 'black', 'font': ('Arial', 12, 'bold')}
+ENTRY_STYLE = {'highlightbackground': '#000000', 'highlightthickness': 2, 'bg': '#f0f8ff', 'fg': 'black'}
+BUTTON_STYLE = {'bg': '#005b96', 'fg': 'white', 'activebackground': '#03396c', 'font': ('Arial', 11, 'bold')}
+TEXTBOX_STYLE = {'bg': '#f0f8ff', 'fg': 'black', 'highlightbackground': '#000000', 'highlightthickness': 2}
+
 
 # YouTube URL Label and Entry
-tk.Label(root, text="YouTube URL:").pack(pady=5)
-url_entry = tk.Entry(root, width=60)
+tk.Label(root, text="YouTube URL:", **LABEL_STYLE).pack(pady=5)
+url_entry = tk.Entry(root, width=60, **ENTRY_STYLE)
 url_entry.pack(pady=5)
 
 # Retrieve Transcript Button
-retrieve_button = tk.Button(root, text="Get Transcript", command=retrieve_transcript)
+retrieve_button = tk.Button(root, text="Get Transcript", command=retrieve_transcript, **BUTTON_STYLE)
 retrieve_button.pack(pady=10)
 
 # ScrolledText Widget to Display the Transcript
-transcript_textbox = scrolledtext.ScrolledText(root, wrap=tk.WORD, width=80, height=20, state=tk.DISABLED)
+transcript_textbox = scrolledtext.ScrolledText(root, wrap=tk.WORD, width=80, height=20, state=tk.DISABLED, **TEXTBOX_STYLE)
 transcript_textbox.pack(pady=10)
+
+# Copy Transcript Button
+copy_button = tk.Button(root, text="Copy Transcript", command=copy_transcript, **BUTTON_STYLE)
+copy_button.pack(pady=10)
+
+# Set the focus to the URL entry field when the application starts
+url_entry.focus()
 
 # Run the GUI event loop
 root.mainloop()
