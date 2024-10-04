@@ -1,4 +1,5 @@
 # YouTube Transcribe AI 🎥🤖
+![image](https://github.com/user-attachments/assets/67f8ce4b-bdf6-46b7-b990-33078ca95897)
 
 YouTube Transcribe AI is a user-friendly application that allows you to effortlessly extract transcripts from YouTube videos in multiple languages. The app provides an intuitive GUI with advanced features, including support for various languages, integration with AI prompts, and easy copying of transcripts for further use.
 
